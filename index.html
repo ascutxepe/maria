@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feliç Aniversari 🎉</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #a8e6cf, #ffd3b6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    animation: fadeIn 0.8s ease;
+    position: relative;
+}
+
+input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+    width: 80%;
+    text-align: center;
+    font-size: 16px;
+}
+
+button {
+    margin-top: 15px;
+    padding: 12px 25px;
+    border: none;
+    background: #ff8c42;
+    color: white;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #e6732a;
+    transform: scale(1.05);
+}
+
+.floating {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 30px;
+    animation: float 3s infinite ease-in-out;
+}
+
+@keyframes float {
+    0% {transform: translateY(0);}
+    50% {transform: translateY(-10px);}
+    100% {transform: translateY(0);}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+.error {
+    color: #d6336c;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.progress {
+    font-size: 13px;
+    opacity: 0.6;
+    margin-bottom: 5px;
+}
+
+.confetti {
+    position: absolute;
+    top: -20px;
+    font-size: 20px;
+    animation: fall 3s linear forwards;
+    pointer-events: none;
+}
+
+@keyframes fall {
+    from {transform: translateY(0) rotate(0deg); opacity: 1;}
+    to {transform: translateY(700px) rotate(360deg); opacity: 0;}
+}
+
+img {
+    width: 100%;
+    border-radius: 15px;
+    margin-top: 10px;
+    max-height: 320px;
+    object-fit: cover;
+}
+
+.chapter-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ff8c42;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Ticket / regalo */
+.ticket {
+    border: 2px dashed #ff8c42;
+    border-radius: 20px;
+    padding: 20px;
+    background: #fff8f0;
+}
+
+.scratch-container {
+    position: relative;
+    margin-top: 20px;
+    height: 110px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#hidden {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #ffe9d6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    opacity: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+#cover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: opacity 0.5s ease;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card" id="app"></div>
+
+<script>
+
+/* 🔐 PREGUNTAS - cambia las respuestas por las vuestras reales */
+const questions = [
+    {
+        q: "Com es deia la gossa mes rabuda que hem tingut?",
+        a: ["Dina"],
+        hint: "Pista: pensa en qui corria per casa quan érem menuts 🐾"
+    },
+    {
+        q: "Cumpleanys de tota la família... quin mes és el cumpleanys de mamà?",
+        a: ["7","8","Juliol","Agost"],
+        hint: "Pista: pensa en què solem celebrar sempre junts en eixa època de l'any 🎂"
+    }
+];
+
+let currentQ = 0;
+
+function normalize(str){
+    return str.trim().toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // quita acentos
+}
+
+function loadQuestion(){
+    const app = document.getElementById("app");
+
+    app.innerHTML = `
+        <div class="floating">🔐</div>
+        <div class="progress">Pregunta ${currentQ + 1} de ${questions.length}</div>
+        <h2>Accés especial</h2>
+        <p><b>${questions[currentQ].q}</b></p>
+        <input id="answer" placeholder="Resposta...">
+        <br>
+        <button onclick="check()">Següent</button>
+        <div class="error" id="error"></div>
+    `;
+
+    document.getElementById("answer").addEventListener("keyup", function(e){
+        if(e.key === "Enter") check();
+    });
+}
+
+function check(){
+    const input = normalize(document.getElementById("answer").value);
+    const error = document.getElementById("error");
+    const validAnswers = questions[currentQ].a.map(normalize);
+
+    if(validAnswers.includes(input)){
+        currentQ++;
+        if(currentQ < questions.length){
+            loadQuestion();
+        } else {
+            startStory();
+        }
+    } else {
+        error.innerText = questions[currentQ].hint;
+    }
+}
+
+/* 📖 HISTORIA - 8 capítulos */
+let step = 0;
+
+const chapters = [
+    {
+        label: "Capítol 1",
+        title: "La peqüeta",
+        text: "Abans de les medalles, abans de tot... només eres tu, descobrint el món.",
+        img: "1-peque.jpeg"
+    },
+    {
+        label: "Capítol 2",
+        title: "Els yayos",
+        text: "Amb tota la família que ens va vore créixer.",
+        img: "2-yayos.jpeg"
+    },
+    {
+        label: "Capítol 3",
+        title: "Els 4",
+        text: "Quan tot era més senzill: tu, jo, mamà i papà.",
+        img: "3-los4.jpeg"
+    },
+    {
+        label: "Capítol 4",
+        title: "Competint des de sempre",
+        text: "Ja apuntaves maneres... eixa garra no és d'ara.",
+        img: "4-compitiendo-peque.jpeg"
+    },
+    {
+        label: "Capítol 5",
+        title: "El pasadís de casa",
+        text: "Els millors partits no van ser en cap pista... van ser ahí, entre tu i jo al pasillo.",
+        img: "5-futbol-pasillo.jpeg"
+    },
+    {
+        label: "Capítol 6",
+        title: "Sense parar",
+        text: "Triatlons, esforç, constància. Continues sense frenar.",
+        img: "6-triatlon.jpeg"
+    },
+    {
+        label: "Capítol 7",
+        title: "A per tot",
+        text: "Esforç i constància, al final, tenen premi.",
+        img: "7-trofeo.jpeg"
+    },
+    {
+        label: "Capítol 8",
+        title: "El dia més feliç",
+        text: "El dia que vau dir que sí, rodejades dels que vos volem.",
+        img: "8-boda.jpeg"
+    },
+    {
+        label: "Capítol 9",
+        title: "Família al complet",
+        text: "I així seguim, tots junts, sumant un any mes.",
+        img: "9-cumple.jpeg"
+    }
+];
+
+function startStory(){
+    step = 0;
+    next();
+}
+
+function next(){
+    const app = document.getElementById("app");
+
+    if(step < chapters.length){
+        const ch = chapters[step];
+        app.innerHTML = `
+        <div class="chapter-label">${ch.label}</div>
+        <h2>${ch.title}</h2>
+        <p>${ch.text}</p>
+        <img src="${ch.img}" alt="${ch.title}">
+        <br>
+        <button onclick="advance()">Següent</button>`;
+    } else if(step === chapters.length){
+        app.innerHTML = `
+        <h2>Feliç aniversari! 🎉</h2>
+        <p>Per molts anys més.</p>
+        <button onclick="revealGift()">🎁 Toca ací</button>`;
+    }
+}
+
+function advance(){
+    step++;
+    next();
+}
+
+/* 🎉 CONFETI + REGALO */
+function revealGift(){
+    for(let i = 0; i < 30; i++){
+        let conf = document.createElement("div");
+        conf.className = "confetti";
+        conf.style.left = Math.random() * 100 + "vw";
+        conf.innerText = ["🎉","🎈","✨","🎊"][Math.floor(Math.random()*4)];
+        conf.style.animationDelay = (Math.random()*0.5) + "s";
+        document.body.appendChild(conf);
+        setTimeout(() => conf.remove(), 3500);
+    }
+
+    const app = document.getElementById("app");
+    app.innerHTML = `
+    <div class="ticket">
+        <h2>🎁 El teu regal</h2>
+        <div class="scratch-container">
+            <div id="hidden">
+                🎪 2 entrades per al Cirque du Soleil!<br>
+                Per a tu i per a la teua xicota 💕
+            </div>
+            <div id="cover">Rasca ací</div>
+        </div>
+        <p style="font-size:13px; opacity:0.7; margin-top:15px;">
+            Les dates i el QR te les passe per WhatsApp 😉
+        </p>
+    </div>
+    `;
+
+    document.getElementById("cover").onclick = function(){
+        this.style.opacity = 0;
+        document.getElementById("hidden").style.opacity = 1;
+        setTimeout(() => this.remove(), 500);
+    };
+}
+
+/* INIT */
+loadQuestion();
+
+</script>
+</body>
+</html>
